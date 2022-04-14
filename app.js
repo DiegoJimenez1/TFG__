@@ -13,89 +13,77 @@ app.use(bodyParser.json());
 
 //----------------------------------leer datos api -------------------------------------------//
 
-let url = 'https://api.preciodelaluz.org/v1/prices/all?zone=PCB'
-axios.get(url,{
+    let url = 'https://api.preciodelaluz.org/v1/prices/all?zone=PCB'
+    axios.get(url,{
 
-})
-.then((response) => {
-    //console.log(response);
-    
-    var conexion = mysql.createConnection({
-        host:"localhost",
-        database:"prueba",
-        user:"admin",
-        password:"admin2Pass=",
-    
-    });
+    })
+    .then((response) => {
+        //console.log(response);
+        
+        var conexion = mysql.createConnection({
+            host:"localhost",
+            database:"prueba",
+            user:"admin",
+            password:"admin2Pass=",
+        
+        });
 
-    conexion.connect(function(error){
-        if(error){
-            throw error;
+        conexion.connect(function(error){
+            if(error){
+                throw error;
+            }else{
+                console.log('CONEXION EXITOSA');
+            }
+        });
+    
+
+    let aux = Object.values(response.data);
+
+    var values_precio = [];
+    var date1 = (new Date()).toISOString().split('T')[0];
+    console.log("la fecha de hoy es :");
+    console.log(aux[0].date);
+    var fecha1 = aux[0].date;
+
+    var sql = "INSERT INTO precios (precio, hora, unidades, Fecha_string) VALUES ?";
+    var sql_= `SELECT * FROM precios WHERE Fecha_string = "${fecha1}"`;
+
+    conexion.query(sql_,(error,result)=>{
+        if (error) throw error;
+
+        if ( result.length > 0){
+            //console.log(result);
+            console.log("si que existe");
+            conexion.end();
         }else{
-            console.log('CONEXION EXITOSA');
+            console.log("no existe");
+            fecha = aux[0].date;
+                
+            console.log("fecha es ahora :");
+                console.log(fecha);
+            
+            for ( let i = 0; i < Object.values(response.data).length ; i++){
+                
+            
+                precio = aux[i].price;
+                hora = aux[i].hour;
+                unidades = aux[i].units;
+                fecha = aux[i].date;
+            
+                var value_=[[precio,hora,unidades,fecha]];
+                conexion.query(sql, [value_], function (err, result) {
+                    if (err) throw err;
+                    console.log("Number of records inserted: " + result.affectedRows);
+                });
+                
+
+            } 
+
+            conexion.end();
+            
         }
     });
-  
 
-   let aux = Object.values(response.data);
-
-   var values_precio = [];
-   var date1 = (new Date()).toISOString().split('T')[0];
-   console.log(aux[0].date);
-
-   var sql = "INSERT INTO precios (precio, hora, unidades, Fecha_string) VALUES ?";
-   var sql_= `SELECT * FROM precios WHERE Fecha_string = "${aux[0].date}"`;
-   var Flag = true;
-
-   
-  
-   conexion.query(sql_,(error,result)=>{
-    if (error) throw error;
-
-    if ( result.length > 0){
-        //console.log(result);
-        console.log("si que existe");
-        Flag == true;
-    }else{
-        console.log("no existe");
-        Flag == false;
-    }
-});
-  
-
-
-/*
-   
-        for ( let i = 0; i < Object.values(response.data).length ; i++){
-            
-        
-            precio = aux[i].price;
-            hora = aux[i].hour;
-            unidades = aux[i].units;
-            fecha = aux[i].date1;
-            
-            console.log(hora);
-            console.log(fecha);
-            console.log(precio);
-
-            //var date = (new Date()).toISOString().split('T')[0];
-            console.log(date1);
-            
-            var value_=[[precio,hora,unidades,fecha]];
-            conexion.query(sql, [value_], function (err, result) {
-                if (err) throw err;
-                console.log("Number of records inserted: " + result.affectedRows);
-            });
-            
-
-        } 
-
-   
-    //conexion.query("INSERT INTO precios (precio, hora, unidades, fecha) VALUES (2.3,$hora,$unidades,'2022-02-03')");
-    */
-    conexion.end();
-
-   
 
 })
 .catch(err => {
@@ -136,13 +124,15 @@ app.get('/',(req,res) => {
     app.get('/infoUser',(req,res) => {
         const sql = `SELECT * FROM Inicio_sesion `;
 
-        var aux2= "Sep 09 2020 00:00:00";
-        var aux = new Date("Sep 09 2020 00:00:00");
-        console.log(aux);
         
+        var name = req.body.Usuario;
+        var pass = req.body.Contraseña;
+
+        console.log(name);
+        console.log(pass);
 
 
-        const sql2 = `SELECT * FROM Inicio_sesion WHERE fecha = ${aux2}`;
+        const sql2 = `SELECT * FROM Inicio_sesion WHERE Usuario = "${name}" and Contraseña = "${pass}" `;
 
        conexion.query(sql2,(error,result)=>{
            if (error) throw error;
