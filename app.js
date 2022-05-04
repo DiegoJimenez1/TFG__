@@ -257,8 +257,10 @@ app.get('/',(req,res) => {
     //----------------- Datos usuario -------------------//
 
     app.post('/precioUso/:fecha',(req,res) => {
-        res.send('precio uso');
+        //res.send('precio uso');
         let datos = req.body;
+        var precioTotal;
+        let precioHora;
 
         if ( datos != null){
             
@@ -266,7 +268,8 @@ app.get('/',(req,res) => {
             console.log(fecha);
             console.log("datos bien enviados");
             console.log(datos);
-            console.log(datos.Hora_inicio);
+            //console.log(datos.datosPrecio);
+            //console.log(datos.datosPrecio.Consumo);
             //consulta  ala bbdd precio de luz de ese dia de la hora en adelanete
 
             const sql = `SELECT * FROM precios WHERE Fecha_string = "${fecha}" and Hora = "${datos.Hora_inicio}" `;
@@ -275,14 +278,26 @@ app.get('/',(req,res) => {
                 if (error) throw error;
      
                 if ( result.length > 0){
-                    console.log(result);
+                    console.log(result[0].precio);
+                    precioHora = result[0].precio / 1000;
+                    console.log("precio hora es :"+precioHora);
+                    console.log(datos.Consumo);
+                    precioTotal = precioHora * datos.Consumo;
+                    console.log("precio total es :"+precioTotal);
+                    let json = {
+                        "precio" : precioTotal
+                    }
+                    console.log(json);
+                     res.json(json);
+
 
                 }else{
                     console.log('no result');
                 }
             });
 
-
+           
+            
         }else{
             res.send('datos error');
             console.log("datos error");
