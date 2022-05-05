@@ -214,6 +214,12 @@ app.get('/',(req,res) => {
 
     app.post('/newUser',(req,res) => {
         res.send('newUser');
+        var name = req.body.Usuario;
+        var pass = req.body.Contraseña;
+
+        console.log(req.body);
+        console.log(name);
+        console.log(pass);
     });
 
     app.post('/modificarUser',(req,res) => {
@@ -269,7 +275,8 @@ app.get('/',(req,res) => {
             console.log("datos bien enviados");
             console.log(datos);
             //console.log(datos.datosPrecio);
-            //console.log(datos.datosPrecio.Consumo);
+            //
+            console.log(datos.Consumo);
             //consulta  ala bbdd precio de luz de ese dia de la hora en adelanete
 
             const sql = `SELECT * FROM precios WHERE Fecha_string = "${fecha}" and Hora = "${datos.Hora_inicio}" `;
