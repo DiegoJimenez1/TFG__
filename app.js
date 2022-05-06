@@ -213,13 +213,49 @@ app.get('/',(req,res) => {
     });
 
     app.post('/newUser',(req,res) => {
-        res.send('newUser');
+        //res.send('newUser');
         var name = req.body.Usuario;
         var pass = req.body.Contraseña;
-
+        var pass_comprobar = req.body.Confirmar_Contraseña;
         console.log(req.body);
         console.log(name);
         console.log(pass);
+        console.log(pass_comprobar);
+
+        if (pass == pass_comprobar){
+            var sql2 = `SELECT * FROM Inicio_sesion WHERE Usuario = "${name}" `;
+            var sql = `INSERT INTO Inicio_sesion (Usuario,Contraseña) VALUES ?`;
+            var value_=[[name,pass]];
+            
+            conexion.query(sql2,[value_],(error,result)=>{
+                if (error) throw error;
+                if ( result.length > 0){
+                    let json={
+                        "respuesta":"ya existe user"
+                    }
+                    res.json(json);
+                }else{
+
+                    conexion.query(sql,[value_],(error,result)=>{
+                        if (error) throw error;
+                        console.log("el resultado es : " +result);
+                        let json={
+                            "respuesta":"correcto"
+                        }
+                        res.json(json);
+                    });
+                   
+                }
+  
+            });
+    
+            
+        }else{
+            let json={
+                "respuesta":"incorrecto"
+            }
+            res.json(json);
+        }
     });
 
     app.post('/modificarUser',(req,res) => {
