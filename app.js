@@ -5,6 +5,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 var cors = require('cors');
 
+const bcrypt = require('bcryptjs');
 
 
 var precio,hora,unidades,fecha;
@@ -156,6 +157,7 @@ app.use(cors())
 
 //--------------------- BBDD ------------------------------------------//
 
+
 var conexion = mysql.createConnection({
     host:"localhost",
     database:"prueba",
@@ -196,9 +198,22 @@ app.get('/',(req,res) => {
         console.log(name);
         console.log(pass);
 
-
+       
         const sql2 = `SELECT * FROM Inicio_sesion WHERE Usuario = "${name}" and Contraseña = "${pass}" `;
+        const sql3 = `SELECT Contraseña FROM Inicio_sesion WHERE Usuario = "${name}"  `;
 
+        conexion.query(sql3,(error,result)=>{
+            if (error) throw error;
+            console.log(result[0].Contraseña);
+            let compare = bcrypt.compareSync(pass,result[0].Contraseña);
+
+           if (compare == true){
+               res.json('login correcto')
+           }else{
+               res.json('login fallido')
+           }
+        });
+        /*
        conexion.query(sql2,(error,result)=>{
            if (error) throw error;
 
@@ -209,10 +224,10 @@ app.get('/',(req,res) => {
                res.send('contraseña o usuario erroneo');
                console.log("no existe el user");
            }
-       });
+       });*/
     });
 
-    app.post('/newUser',(req,res) => {
+    app.post('/newUser',async (req,res) => {
         //res.send('newUser');
         var name = req.body.Usuario;
         var pass = req.body.Contraseña;
@@ -220,12 +235,16 @@ app.get('/',(req,res) => {
         console.log(req.body);
         console.log(name);
         console.log(pass);
+
         console.log(pass_comprobar);
 
         if (pass == pass_comprobar){
             var sql2 = `SELECT * FROM Inicio_sesion WHERE Usuario = "${name}" `;
             var sql = `INSERT INTO Inicio_sesion (Usuario,Contraseña) VALUES ?`;
-            var value_=[[name,pass]];
+            let encryp_pass = await bcrypt.hash(pass,8);
+            console.log("la pass encrypt es :"+encryp_pass);
+
+            var value_=[[name,encryp_pass]];
             
             conexion.query(sql2,[value_],(error,result)=>{
                 if (error) throw error;
