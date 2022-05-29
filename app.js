@@ -7,6 +7,10 @@ var cors = require('cors');
 
 const bcrypt = require('bcryptjs');
 
+var jwt = require("jwt-simple");
+var moment = require("moment");
+var config = require("./config");
+
 
 var precio,hora,unidades,fecha;
 
@@ -203,15 +207,26 @@ app.get('/',(req,res) => {
         const sql3 = `SELECT Contraseña FROM Inicio_sesion WHERE Usuario = "${name}"  `;
 
         conexion.query(sql3,(error,result)=>{
-            if (error) throw error;
+            if (result == ""){
+                res.json('no existe user');
+            }else{
             console.log(result[0].Contraseña);
             let compare = bcrypt.compareSync(pass,result[0].Contraseña);
 
-           if (compare == true){
-               res.json('login correcto')
-           }else{
-               res.json('login fallido')
-           }
+                if (compare == true){
+
+                    let respuesta = {
+                        "token" : "diego",
+                        "respuesta" : "login correcto",
+                        "id" : `${name}`
+                    }
+
+
+                    res.json(respuesta)
+                }else{
+                    res.json('login fallido')
+                }
+            }
         });
         /*
        conexion.query(sql2,(error,result)=>{
@@ -288,7 +303,7 @@ app.get('/',(req,res) => {
     app.get('/preciosLuzHoras/:fecha',(req,res) => {
 
         const {fecha}=req.params;
-        console.log(fecha);
+        console.log("la fecha es :"+fecha);
         /*
         var proposedDate = fecha + "T22:00:00.000Z";
         console.log(proposedDate);
@@ -312,7 +327,19 @@ app.get('/',(req,res) => {
     });
 
     app.get('/preciosLuzMadiaMes',(req,res) => {
-        res.send('precios luz Mes');
+        
+        const sql = `SELECT * FROM Precios_media `;
+        conexion.query(sql,(error,result)=>{
+            if (error) throw error;
+ 
+            if ( result.length > 0){
+                res.json(result);
+            }else{
+                res.send('no result');
+            }
+        });
+     
+
     });
 
     //----------------- Datos usuario -------------------//
