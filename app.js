@@ -342,6 +342,22 @@ app.get('/',(req,res) => {
 
     });
 
+    app.post('/añadirGasto',(req,res) => {
+       
+    var sql = `INSERT INTO Gastos_Usuario (Usuario,Nombre,Gasto,Consumo) VALUES ?`;
+    
+    conexion.query(sql,[value_],(error,result)=>{
+        var value_=[[]];
+        if (error) throw error;
+        console.log("el resultado es : " +result);
+        let json={
+            "respuesta":"correcto"
+        }
+        res.json(json);
+    });
+
+    });
+
     //----------------- Datos usuario -------------------//
 
     app.post('/precioUso/:fecha',(req,res) => {
