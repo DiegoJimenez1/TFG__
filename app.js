@@ -342,12 +342,20 @@ app.get('/',(req,res) => {
 
     });
 
-    app.post('/añadirGasto',(req,res) => {
+    app.post('/anadirGasto',(req,res) => {
+
+    var user = req.body.Usuario;
+    var name = req.body.Nombre;
+    var gasto = req.body.Gasto;
+    var consumo = req.body.Consumo;
+
+    console.log(res);
        
     var sql = `INSERT INTO Gastos_Usuario (Usuario,Nombre,Gasto,Consumo) VALUES ?`;
+    var value_=[[user,name,gasto,consumo]];
     
     conexion.query(sql,[value_],(error,result)=>{
-        var value_=[[]];
+        
         if (error) throw error;
         console.log("el resultado es : " +result);
         let json={
