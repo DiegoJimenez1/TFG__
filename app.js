@@ -349,7 +349,9 @@ app.get('/',(req,res) => {
     var gasto = req.body.Gasto;
     var consumo = req.body.Consumo;
 
-    console.log(res);
+    console.log("nombre es:  ");
+
+    console.log(user);
        
     var sql = `INSERT INTO Gastos_Usuario (Usuario,Nombre,Gasto,Consumo) VALUES ?`;
     var value_=[[user,name,gasto,consumo]];
@@ -365,6 +367,27 @@ app.get('/',(req,res) => {
     });
 
     });
+
+
+    app.get('/gastosPersonales/:user',(req,res) => {
+        
+        
+        const {user}=req.params;
+        console.log("user es :"+user);
+        const sql = `SELECT * FROM Gastos_Usuario WHERE Usuario = "${user}"`;
+        conexion.query(sql,(error,result)=>{
+            if (error) throw error;
+ 
+            if ( result.length > 0){
+                res.json(result);
+            }else{
+                res.send('no result');
+            }
+        });
+     
+
+    });
+
 
     //----------------- Datos usuario -------------------//
 
