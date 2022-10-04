@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 var cors = require('cors');
 
 const bcrypt = require('bcryptjs');
+const cron = require('node-cron')
 
 var jwt = require("jwt-simple");
 var moment = require("moment");
@@ -16,152 +17,184 @@ var precio,hora,unidades,fecha;
 
 const app = express();
 app.use(bodyParser.json());
+
 app.use(cors()) 
 
 
-//----------------------------------leer datos api -------------------------------------------//
 
-    let url = 'https://api.preciodelaluz.org/v1/prices/all?zone=PCB'
-    axios.get(url,{
+//cron.schedule(' 0 21 * * *', () =>{
+   //----------------------------------leer datos api -------------------------------------------//
 
-    })
-    .then((response) => {
-        
-        
-        let aux = Object.values(response.data);
+    console.log("******************************************* la hora actual es *******************************************************")
+    // crea un nuevo objeto `Date`
+    var today = new Date();
+ 
+    // obtener la fecha y la hora
+    var now = today.toLocaleString();
+    console.log(now);
 
-        var values_precio = [];
-        var date1 = (new Date()).toISOString().split('T')[0];
-        console.log("la fecha de hoy es :");
-        console.log(aux[0].date);
-        var fecha1 = aux[0].date;
+   let url = 'https://api.preciodelaluz.org/v1/prices/all?zone=PCB'
+   axios.get(url,{
 
-       //--------------------------------------------------------------------------------------//
-       //--------------------------------------------------------------------------------------//
+   })
+   .then((response) => {
+       
+       
+       let aux = Object.values(response.data);
 
-       var sql = "INSERT INTO precios (precio, hora, unidades, Fecha_string) VALUES ?";
-       var sql_ = `SELECT * FROM precios WHERE Fecha_string = "${fecha1}"`;
+       var values_precio = [];
+       var date1 = (new Date()).toISOString().split('T')[0];
+       console.log("la fecha de hoy es :");
+       console.log(aux[0].date);
+       var fecha1 = aux[0].date;
 
-                var conexion = mysql.createConnection({
-                    host:"localhost",
-                    database:"prueba",
-                    user:"admin",
-                    password:"admin2Pass=",
-                
-                });
+      //--------------------------------------------------------------------------------------//
+      //--------------------------------------------------------------------------------------//
 
-                conexion.connect(function(error){
-                    if(error){
-                        throw error;
-                    }else{
-                        console.log('CONEXION EXITOSA');
-                    }
-                });
+      var sql = "INSERT INTO precios (precio, hora, unidades, Fecha_string) VALUES ?";
+      var sql_ = `SELECT * FROM precios WHERE Fecha_string = "${fecha1}"`;
+
+             //CONEXION LOCAL    
+               var conexion = mysql.createConnection({
+                   host:"localhost",
+                   database:"prueba",
+                   user:"admin",
+                   password:"admin2Pass=",
+               
+               });
+               /*
+               var conexion = mysql.createConnection({
+                   host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
+                   database:"b8gyoaad4emvcrwuwtra",
+                   user:"uoxipcxsxq7neldz",
+                   password:"emZVDmwZxUMHrha8bhAL",
+               
+               });*/
+
+               conexion.connect(function(error){
+                   if(error){
+                       throw error;
+                   }else{
+                       console.log('CONEXION EXITOSA 1');
+                   }
+               });
+          
+           conexion.query(sql_,(error,result)=>{
+               if (error) throw error;
+
+               if ( result.length > 0){
+                   //console.log(result);
+                   console.log("si que existe");
+                   //conexion.end();
+               }else{
+                   console.log("no existe");
+                   fecha = aux[0].date;
+                       
+                   console.log("fecha es ahora :");
+                       console.log(fecha);
+                   
+                   for ( let i = 0; i < Object.values(response.data).length ; i++){
+                       
+                   
+                       precio = aux[i].price;
+                       hora = aux[i].hour;
+                       unidades = aux[i].units;
+                       fecha = aux[i].date;
+                   
+                       var value_=[[precio,hora,unidades,fecha]];
+                       conexion.query(sql, [value_], function (err, result) {
+                           if (err) throw err;
+                           console.log("Number of records inserted: " + result.affectedRows);
+                       });
+                   } 
+                 conexion.end(); 
+               }
+           });
+
+
+   })
+   .catch(err => {
+       console.log(err);
+   })
+
+   //--------------------------------------------------------------------------------------------//
+   //--------------------------------------------------------------------------------------------//
+
+   let url2 = 'https://api.preciodelaluz.org/v1/prices/avg?zone=PCB'
+   axios.get(url2,{
+
+   })
+   .then((response) => { 
+
+       var respuesta = response.data;
+       console.log(respuesta);
+       var fecha2 = respuesta.date;
+       var Precio2 = respuesta.price;
+       var unidades2= respuesta.units;
+       console.log(fecha2);
+       var Media_dia=[[fecha2,Precio2,unidades2]];
+
+       //------------------------------------------------------------------------------------------------//
+   
+       var sql2 = `INSERT INTO Precios_media (fecha,precio,unidades) VALUES ?`;
+       var sql3 = `SELECT * FROM Precios_media WHERE fecha = "${fecha2}"`;
+
+       /* local
+           var conexion = mysql.createConnection({
+               host:"localhost",
+               database:"prueba",
+               user:"admin",
+               password:"admin2Pass=",
            
-            conexion.query(sql_,(error,result)=>{
-                if (error) throw error;
+           });
+               */
+           var conexion = mysql.createConnection({
+               host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
+               database:"b8gyoaad4emvcrwuwtra",
+               user:"uoxipcxsxq7neldz",
+               password:"emZVDmwZxUMHrha8bhAL",
+           
+           });
 
-                if ( result.length > 0){
-                    //console.log(result);
-                    console.log("si que existe");
-                    conexion.end();
-                }else{
-                    console.log("no existe");
-                    fecha = aux[0].date;
-                        
-                    console.log("fecha es ahora :");
-                        console.log(fecha);
-                    
-                    for ( let i = 0; i < Object.values(response.data).length ; i++){
-                        
-                    
-                        precio = aux[i].price;
-                        hora = aux[i].hour;
-                        unidades = aux[i].units;
-                        fecha = aux[i].date;
-                    
-                        var value_=[[precio,hora,unidades,fecha]];
-                        conexion.query(sql, [value_], function (err, result) {
-                            if (err) throw err;
-                            console.log("Number of records inserted: " + result.affectedRows);
-                        });
-                    } 
-                  conexion.end(); 
-                }
-            });
+           conexion.connect(function(error){
+               if(error){
+                       throw error;
+               }else{
+                       console.log('CONEXION EXITOSA 2');
+               }
+           });
 
+           conexion.query(sql3,(error,result)=>{
+               if (error) throw error;
 
-    })
-    .catch(err => {
-        console.log(err);
-    })
+               if ( result.length > 0){
+                       //console.log(result);
+                       console.log("si que existe para esta fecha media ");
+                       //conexion.end();
+               }else{
+                       console.log("nuevo dia");
+                       
+                       conexion.query(sql2,[Media_dia],  function (err, result) {
+                           if (err) throw err;
+                           console.log("Number of records inserted: " + result.affectedRows);
+                       });
+                   
+                   }
 
-    //--------------------------------------------------------------------------------------------//
-    //--------------------------------------------------------------------------------------------//
+               });
+               conexion.end();
 
-    let url2 = 'https://api.preciodelaluz.org/v1/prices/avg?zone=PCB'
-    axios.get(url2,{
+       })
+   .catch(err => {
+       console.log(err);
+   })
+//});
 
-    })
-    .then((response) => { 
-
-        var respuesta = response.data;
-        console.log(respuesta);
-        var fecha2 = respuesta.date;
-        var Precio2 = respuesta.price;
-        var unidades2= respuesta.units;
-        console.log(fecha2);
-        var Media_dia=[[fecha2,Precio2,unidades2]];
-
-        //------------------------------------------------------------------------------------------------//
-    
-        var sql2 = `INSERT INTO Precios_media (fecha,precio,unidades) VALUES ?`;
-        var sql3 = `SELECT * FROM Precios_media WHERE fecha = "${fecha2}"`;
-
-            var conexion = mysql.createConnection({
-                host:"localhost",
-                database:"prueba",
-                user:"admin",
-                password:"admin2Pass=",
-            
-            });
-
-            conexion.connect(function(error){
-                if(error){
-                        throw error;
-                }else{
-                        console.log('CONEXION EXITOSA');
-                }
-            });
-
-            conexion.query(sql3,(error,result)=>{
-                if (error) throw error;
-
-                if ( result.length > 0){
-                        //console.log(result);
-                        console.log("si que existe para esta fecha");
-                        conexion.end();
-                }else{
-                        console.log("nuevo dia");
-                        
-                        conexion.query(sql2,[Media_dia],  function (err, result) {
-                            if (err) throw err;
-                            console.log("Number of records inserted: " + result.affectedRows);
-                        });
-                    
-                    }
-
-                });
-
-        })
-    .catch(err => {
-        console.log(err);
-    })
 
 
 //--------------------- BBDD ------------------------------------------//
 
-
+/*local*/
 var conexion = mysql.createConnection({
     host:"localhost",
     database:"prueba",
@@ -170,28 +203,39 @@ var conexion = mysql.createConnection({
 
 });
 
+/*
+var conexion = mysql.createConnection({
+    host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
+    database:"b8gyoaad4emvcrwuwtra",
+    user:"uoxipcxsxq7neldz",
+    password:"emZVDmwZxUMHrha8bhAL",
+
+});
+*/
+/*
 var conectar = function conectarBBDD(){
 conexion.connect(function(error){
     if(error){
         throw error;
     }else{
-        console.log('CONEXION EXITOSA');
+        console.log('CONEXION EXITOSA 3');
     }
 });
 
-}
+}*/
 
 //---------------------- End points ------------------------------------//
 
 app.listen(PORT, () => console.log(`run on port ${PORT}`));
 
 app.get('/',(req,res) => {
-    res.send('welcome to my api');
+    res.send('TFG 2022 DIEGO JIMENEZ PRIETO');
 });
 
     //----------- manejo usuarios---------//
 
     app.post('/infoUser',(req,res) => {
+        
         const sql = `SELECT * FROM Inicio_sesion `;
 
         
@@ -240,9 +284,15 @@ app.get('/',(req,res) => {
                console.log("no existe el user");
            }
        });*/
+
+       
     });
 
     app.post('/newUser',async (req,res) => {
+
+        
+
+
         //res.send('newUser');
         var name = req.body.Usuario;
         var pass = req.body.Contraseña;
@@ -290,6 +340,7 @@ app.get('/',(req,res) => {
             }
             res.json(json);
         }
+       
     });
 
     app.post('/modificarUser',(req,res) => {
@@ -301,6 +352,8 @@ app.get('/',(req,res) => {
     //----------------- precios ----------------------------//
 
     app.get('/preciosLuzHoras/:fecha',(req,res) => {
+
+        
 
         const {fecha}=req.params;
         console.log("la fecha es :"+fecha);
@@ -322,11 +375,13 @@ app.get('/',(req,res) => {
            }
        });
     
-
+      
 
     });
 
     app.get('/preciosLuzMadiaMes',(req,res) => {
+
+       
         
         const sql = `SELECT * FROM Precios_media `;
         conexion.query(sql,(error,result)=>{
@@ -339,10 +394,12 @@ app.get('/',(req,res) => {
             }
         });
      
-
+            
     });
 
     app.post('/anadirGasto',(req,res) => {
+
+        
 
     var user = req.body.Usuario;
     var name = req.body.Nombre;
@@ -365,13 +422,15 @@ app.get('/',(req,res) => {
         }
         res.json(json);
     });
-
+       
     });
 
 
     app.get('/gastosPersonales/:user',(req,res) => {
         
-        
+       
+
+
         const {user}=req.params;
         console.log("user es :"+user);
         const sql = `SELECT * FROM Gastos_Usuario WHERE Usuario = "${user}"`;
@@ -385,8 +444,37 @@ app.get('/',(req,res) => {
             }
         });
      
-
+            
     });
+
+
+    app.post('/borrarGasto',(req,res) => {
+
+        var user = req.body.Usuario;
+        var name = req.body.Nombre;
+        var gasto = req.body.Gasto;
+        var consumo = req.body.Consumo;
+    
+        console.log("nombre es:  ");
+    
+        console.log(user);
+        console.log("LOS DATOS QUE LLEGAN SON");
+        console.log("name :",name);
+        console.log("gasto :",gasto);  
+        var sql = `DELETE FROM Gastos_Usuario WHERE Usuario = "${user}" AND Nombre = "${name}" `;
+      
+        
+        conexion.query(sql,(error,result)=>{
+            
+            if (error) throw error;
+            console.log("el resultado es : " +result);
+            let json={
+                "respuesta":"correcto"
+            }
+            res.json(json);
+        });
+    
+        });
 
 
     //----------------- Datos usuario -------------------//
