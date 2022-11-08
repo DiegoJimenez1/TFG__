@@ -107,7 +107,7 @@ app.use(cors())
                            console.log("Number of records inserted: " + result.affectedRows);
                        });
                    } 
-                 conexion.end(); 
+                 //conexion.end(); 
                }
            });
 
@@ -139,7 +139,7 @@ app.use(cors())
        var sql2 = `INSERT INTO Precios_media (fecha,precio,unidades) VALUES ?`;
        var sql3 = `SELECT * FROM Precios_media WHERE fecha = "${fecha2}"`;
 
-       /* local
+       
            var conexion = mysql.createConnection({
                host:"localhost",
                database:"prueba",
@@ -147,14 +147,14 @@ app.use(cors())
                password:"admin2Pass=",
            
            });
-               */
+               /*
            var conexion = mysql.createConnection({
                host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
                database:"b8gyoaad4emvcrwuwtra",
                user:"uoxipcxsxq7neldz",
                password:"emZVDmwZxUMHrha8bhAL",
            
-           });
+           });*/
 
            conexion.connect(function(error){
                if(error){
@@ -173,7 +173,7 @@ app.use(cors())
                        //conexion.end();
                }else{
                        console.log("nuevo dia");
-                       
+                       console.log(Media_dia)
                        conexion.query(sql2,[Media_dia],  function (err, result) {
                            if (err) throw err;
                            console.log("Number of records inserted: " + result.affectedRows);
@@ -182,7 +182,7 @@ app.use(cors())
                    }
 
                });
-               conexion.end();
+              // conexion.end();
 
        })
    .catch(err => {
@@ -272,18 +272,7 @@ app.get('/',(req,res) => {
                 }
             }
         });
-        /*
-       conexion.query(sql2,(error,result)=>{
-           if (error) throw error;
-
-           if ( result.length > 0){
-               res.json(result);
-               console.log("existe el user");
-           }else{
-               res.send('contraseña o usuario erroneo');
-               console.log("no existe el user");
-           }
-       });*/
+   
 
        
     });
@@ -297,6 +286,7 @@ app.get('/',(req,res) => {
         var name = req.body.Usuario;
         var pass = req.body.Contraseña;
         var pass_comprobar = req.body.Confirmar_Contraseña;
+        var email = req.body.Email;
         console.log(req.body);
         console.log(name);
         console.log(pass);
@@ -305,11 +295,11 @@ app.get('/',(req,res) => {
 
         if (pass == pass_comprobar){
             var sql2 = `SELECT * FROM Inicio_sesion WHERE Usuario = "${name}" `;
-            var sql = `INSERT INTO Inicio_sesion (Usuario,Contraseña) VALUES ?`;
+            var sql = `INSERT INTO Inicio_sesion (Usuario,Contraseña,Email) VALUES ?`;
             let encryp_pass = await bcrypt.hash(pass,8);
             console.log("la pass encrypt es :"+encryp_pass);
 
-            var value_=[[name,encryp_pass]];
+            var value_=[[name,encryp_pass,email]];
             
             conexion.query(sql2,[value_],(error,result)=>{
                 if (error) throw error;
@@ -343,8 +333,88 @@ app.get('/',(req,res) => {
        
     });
 
-    app.post('/modificarUser',(req,res) => {
-        res.send('modificarUser');
+
+    app.post('/dataUsuario',(req,res) => {
+        
+        var name = req.body.Usuario;
+        
+        const sql =  `SELECT * FROM Inicio_sesion WHERE Usuario = "${name}" `;
+
+        
+        
+        var pass = req.body.Contraseña;
+
+        console.log(req.body);
+        console.log(name);
+        
+
+       
+     
+
+        conexion.query(sql,(error,result)=>{
+            if (result == ""){
+                res.json('no existe user');
+            }else{
+
+                    res.json(result)
+                
+            }
+        });
+   
+
+       
+    });
+
+
+
+
+    app.post('/modificarUser',async (req,res)  => {
+
+        
+        var name = req.body.Usuario
+        var email = req.body.Email
+        var pass = req.body.Contraseña
+        var oldPass = req.body.AntiguaContraseña
+        let encryp_pass = await bcrypt.hash(pass,8);
+        console.log("estamos en modificar user")
+        console.log("email y name es :"+email+name+" "+oldPass)
+        console.log("la pass encrypt es :"+encryp_pass);
+
+        const sql = `UPDATE Inicio_sesion SET Contraseña = "${encryp_pass}" , Email = "${email}"  WHERE Usuario = "${name}"`
+        const sql1 =  `SELECT * FROM Inicio_sesion WHERE Usuario = "${name}" `;
+
+
+        conexion.query(sql1,(error,result)=>{
+            if (result == ""){
+                res.json('no existe user');
+            }else{
+            console.log(result[0].Contraseña);
+            let compare = bcrypt.compareSync(oldPass,result[0].Contraseña);
+
+                if (compare == true){
+
+                   console.log("misma pass")
+                    
+                   conexion.query(sql,(error,result)=>{
+                    if (result == error){
+                        res.json('error update');
+                    }else{
+                        console.log(result)
+                        res.json("actualizado correctamente")
+                        
+                    }
+                });
+                
+                }else{
+                    console.log("contraseñas diferentes")
+                    res.json("contraseñas diferentes")
+                }
+            }
+        });
+
+
+        
+       
     });
 
 
@@ -517,6 +587,11 @@ app.get('/',(req,res) => {
 
                 }else{
                     console.log('no result');
+                    let fallo = "fallo"
+                    let json={
+                        "respuesta":fallo
+                    }
+                    res.json(json)
                 }
             });
 
