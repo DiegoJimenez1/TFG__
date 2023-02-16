@@ -12,9 +12,62 @@ var jwt = require("jwt-simple");
 var moment = require("moment");
 var config = require("./config");
 
-
+ 
 var precio,hora,unidades,fecha;
-
+var CODIGOS_PROV = new Array(
+  new Array(  "01",	"Álava"	,"VI"),
+  new Array(  "02",	"Albacete"	,"AB"),
+   new Array( "03",	"Alicante",	"A"),
+    new Array( "04",	"Almería",	"AL"),
+   new Array( "05",	"Ávila"	,"AV"),
+    new Array( "06",	"Badajoz",	"BA"),
+   new Array( "07",	"Baleares",	"PM / IB"),
+    new Array("08",	"Barcelona",	"B"),
+    new Array("09",	"Burgos",	"BU"),
+    new Array("10",	"Cáceres",	"CC"),
+    new Array("11",	"Cádiz",	"CA"),
+    new Array("12",	"Castellón",	"CS"),
+    new Array("13",	"Ciudad Real",	"CR"),
+    new Array("14",	"Córdoba",	"CO"),
+   new Array( "15",	"La Coruña",	"C"),
+    new Array("16",	"Cuenca",	"CU"),
+    new Array("17",	"Gerona",	"GE / GI"),
+    new Array("18",	"Granada",	"GR"),
+    new Array("19",	"Guadalajara",	"GU"),
+    new Array("20",	"Guipúzcoa",	"SS"),
+   new Array( "21",	"Huelva",	"H"),
+   new Array( "22",	"Huesca",	"HU"),
+   new Array( "23",	"Jaén",	"J"),
+    new Array("24",	"León",	"LE"),
+    new Array("25",	"Lérida",	"L"),
+   new Array( "26",	"La Rioja",	"LO"),
+   new Array( "27",	"Lugo",	"LU"),
+   new Array( "28",	"Madrid",	"M"),
+   new Array( "29",	"Málaga","MA"),
+   new Array( "30",	"Murcia",	"MU"),
+   new Array( "31",	"Navarra",	"NA"),
+    new Array("32",	"Orense",	"OR / OU"),
+   new Array( "33",	"Asturias",	"O"),
+   new Array( "34",	"Palencia",	"P"),
+   new Array( "35",	"Las Palmas",	"GC"),
+   new Array( "36",	"Pontevedra",	"PO"),
+   new Array( "37",	"Salamanca",	"SA"),
+    new Array("38",	"Santa Cruz de Tenerife",	"TF"),
+    new Array("39",	"Cantabria",	"S"),
+    new Array("40",	"Segovia",	"SG"),
+    new Array("41",	"Sevilla",	"SE"),
+   new Array( "42",	"Soria"	,"SO"),
+   new Array( "43",	"Tarragona",	"T"),
+   new Array( "44",	"Teruel",	"TE"),
+    new Array("45",	"Toledo","TO"),
+    new Array("46",	"Valencia",	"V"),
+    new Array("47",	"Valladolid",	"VA"),
+    new Array("48",	"Vizcaya",	"BI"),
+    new Array("49",	"Zamora",	"ZA"),
+   new Array( "50",	"Zaragoza",	"Z"),
+   new Array( "51",	"Ceuta",	"CE"),
+    new Array("52",	"Melilla",	"ML")
+)
 const app = express();
 app.use(bodyParser.json());
 
@@ -116,7 +169,44 @@ app.use(cors())
    .catch(err => {
        console.log(err);
    })
+   //--------------------------PRECIOS GASOLINA-----------------------------------------//
+   app.get('/PreciosProvincia/:provincia',(req,res) => {
+       console.log(req.params)
+       console.log(req.params.provincia)
+        var provincia
+        
+        
+        for(let i = 0 ; i <= CODIGOS_PROV.length-1; i++){
+            
+            if(CODIGOS_PROV[i][1] == req.params.provincia){
+                provincia = CODIGOS_PROV[i][0]
+            }
 
+        }
+        
+       //const found = CODIGOS_PROV.find(element => element = "Salamanca");
+      // const found = CODIGOS_PROV.indexOf("Salamanca")
+        //console.log(found)
+        //console.log(CODIGOS_PROV[found])
+        //console.log(found[0])
+        // provincia = found[0]
+        console.log(provincia)
+  
+    let url_GASOLINA = `https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/FiltroProvincia/${provincia}`
+    let url_test = "https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/FiltroMunicipio/140" 
+        axios.get(url_GASOLINA,{
+
+        })
+        .then((response) => {
+            //console.log(response.data)
+            console.log(response.data.ListaEESSPrecio[2])
+            var tamaño = response.data.ListaEESSPrecio.length
+            console.log("el tamamño es : ", tamaño)
+            res.json(response.data.ListaEESSPrecio)
+        })
+        
+      
+    })
    //--------------------------------------------------------------------------------------------//
    //--------------------------------------------------------------------------------------------//
 
@@ -475,13 +565,13 @@ app.get('/',(req,res) => {
     var name = req.body.Nombre;
     var gasto = req.body.Gasto;
     var consumo = req.body.Consumo;
-
+    var TipoDato = "LUZ" 
     console.log("nombre es:  ");
 
     console.log(user);
        
-    var sql = `INSERT INTO Gastos_Usuario (Usuario,Nombre,Gasto,Consumo) VALUES ?`;
-    var value_=[[user,name,gasto,consumo]];
+    var sql = `INSERT INTO Gastos_Usuario (Usuario,Nombre,Gasto,Consumo,TipoDato) VALUES ?`;
+    var value_=[[user,name,gasto,consumo,TipoDato]];
     
     conexion.query(sql,[value_],(error,result)=>{
         
@@ -544,6 +634,72 @@ app.get('/',(req,res) => {
             res.json(json);
         });
     
+        });
+
+
+        app.post('/CalcularGastoGasolina',(req,res) => {
+           
+            let datos = req.body;
+        var precioTotal;
+        let precioHora;
+
+        if ( datos != null){
+            console.log(datos)
+            console.log("kilometros :" +req.body.kilometros + "consumo"+req.body.Consumo+"precioslitros :"+req.body.precioslitro )
+
+            var kilometros = req.body.kilometros;
+            var consumo = req.body.Consumo;
+            var precioslitro = req.body.precioslitro;
+            
+            console.log("datos bien enviados");
+            
+            var litrosTotal = (kilometros * consumo) /100
+            var preciototal = litrosTotal * precioslitro
+            console.log(preciototal)
+
+            let json={
+                "precio": preciototal
+            }
+               
+            res.json(json)
+
+            
+        }else{
+            res.send('datos error');
+            console.log("datos error");
+        }
+            
+         
+                
+        });
+
+
+
+
+
+        app.post('/gastosCarburante/:fecha',(req,res) => {
+
+            const {fecha}=req.params;
+            var user = req.body.Usuario;
+            var name = req.body.Nombre;
+            var gasto = req.body.Gasto;
+            var consumo = req.body.Consumo;
+            var TipoDato = "CARBURANTE" 
+
+            var sql = `INSERT INTO Gastos_Usuario (Usuario,Nombre,Gasto,Consumo,TipoDato) VALUES ?`;
+            var value_=[[user,name,gasto,consumo,TipoDato]];
+            
+            conexion.query(sql,[value_],(error,result)=>{
+                
+                if (error) throw error;
+                console.log("el resultado es : " +result);
+                let json={
+                    "respuesta":"correcto"
+                }
+                res.json(json);
+            });
+         
+                
         });
 
 
