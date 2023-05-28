@@ -12,6 +12,8 @@ var jwt = require("jwt-simple");
 var moment = require("moment");
 var config = require("./config");
 
+
+
  
 var precio,hora,unidades,fecha;
 var CODIGOS_PROV = new Array(
@@ -74,6 +76,10 @@ app.use(bodyParser.json());
 app.use(cors()) 
 
 
+// cron.schedule('* * * * *', () => {
+//     console.log('Esta tarea se ejecuta cada minuto');
+//   });
+
 
 //cron.schedule(' 0 21 * * *', () =>{
    //----------------------------------leer datos api -------------------------------------------//
@@ -87,198 +93,208 @@ app.use(cors())
     console.log(now);
 
    let url = 'https://api.preciodelaluz.org/v1/prices/all?zone=PCB'
-   axios.get(url,{
 
-   })
-   .then((response) => {
-       
-       
-       let aux = Object.values(response.data);
+    //cron.schedule('0 */12 * * *', () => {
 
-       var values_precio = [];
-       var date1 = (new Date()).toISOString().split('T')[0];
-       console.log("la fecha de hoy es :");
-       console.log(aux[0].date);
-       var fecha1 = aux[0].date;
-
-      //--------------------------------------------------------------------------------------//
-      //--------------------------------------------------------------------------------------//
-
-      var sql = "INSERT INTO precios (precio, hora, unidades, Fecha_string) VALUES ?";
-      var sql_ = `SELECT * FROM precios WHERE Fecha_string = "${fecha1}"`;
-
-             //CONEXION LOCAL    
-               var conexion = mysql.createConnection({
-                   host:"localhost",
-                   database:"prueba",
-                   user:"admin",
-                   password:"admin2Pass=",
-               
-               });
-               /*
-               var conexion = mysql.createConnection({
-                   host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
-                   database:"b8gyoaad4emvcrwuwtra",
-                   user:"uoxipcxsxq7neldz",
-                   password:"emZVDmwZxUMHrha8bhAL",
-               
-               });*/
-
-               conexion.connect(function(error){
-                   if(error){
-                       throw error;
-                   }else{
-                       console.log('CONEXION EXITOSA 1');
-                   }
-               });
-          
-           conexion.query(sql_,(error,result)=>{
-               if (error) throw error;
-
-               if ( result.length > 0){
-                   //console.log(result);
-                   console.log("si que existe");
-                   //conexion.end();
-               }else{
-                   console.log("no existe");
-                   fecha = aux[0].date;
-                       
-                   console.log("fecha es ahora :");
-                       console.log(fecha);
-                   
-                   for ( let i = 0; i < Object.values(response.data).length ; i++){
-                       
-                   
-                       precio = aux[i].price;
-                       hora = aux[i].hour;
-                       unidades = aux[i].units;
-                       fecha = aux[i].date;
-                   
-                       var value_=[[precio,hora,unidades,fecha]];
-                       conexion.query(sql, [value_], function (err, result) {
-                           if (err) throw err;
-                           console.log("Number of records inserted: " + result.affectedRows);
-                       });
-                   } 
-                 //conexion.end(); 
-               }
-           });
-
-
-   })
-   .catch(err => {
-       console.log(err);
-   })
-   //--------------------------PRECIOS GASOLINA-----------------------------------------//
-   app.get('/PreciosProvincia/:provincia',(req,res) => {
-       console.log(req.params)
-       console.log(req.params.provincia)
-        var provincia
-        
-        
-        for(let i = 0 ; i <= CODIGOS_PROV.length-1; i++){
-            
-            if(CODIGOS_PROV[i][1] == req.params.provincia){
-                provincia = CODIGOS_PROV[i][0]
-            }
-
-        }
-        
-       //const found = CODIGOS_PROV.find(element => element = "Salamanca");
-      // const found = CODIGOS_PROV.indexOf("Salamanca")
-        //console.log(found)
-        //console.log(CODIGOS_PROV[found])
-        //console.log(found[0])
-        // provincia = found[0]
-        console.log(provincia)
+        console.log('Esta tarea se ejecuta cada 12 horas');
+        console.log("y son las : ")
+        console.log(now)
   
-    let url_GASOLINA = `https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/FiltroProvincia/${provincia}`
-    let url_test = "https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/FiltroMunicipio/140" 
-        axios.get(url_GASOLINA,{
+        // Lectura precios dia las 24 horas
+
+        axios.get(url,{
 
         })
         .then((response) => {
-            //console.log(response.data)
-            console.log(response.data.ListaEESSPrecio[2])
-            var tamaño = response.data.ListaEESSPrecio.length
-            console.log("el tamamño es : ", tamaño)
-            res.json(response.data.ListaEESSPrecio)
-        })
+            
+            
+            let aux = Object.values(response.data);
+
+            var values_precio = [];
+            var date1 = (new Date()).toISOString().split('T')[0];
+            console.log("la fecha de hoy es :");
+            console.log(aux[0].date);
+            var fecha1 = aux[0].date;
+
+            //--------------------------------------------------------------------------------------//
+            //--------------------------------------------------------------------------------------//
+
+            var sql = "INSERT INTO precios (precio, hora, unidades, Fecha_string) VALUES ?";
+            var sql_ = `SELECT * FROM precios WHERE Fecha_string = "${fecha1}"`;
+
+                    //CONEXION LOCAL    
+                    var conexion = mysql.createConnection({
+                        host:"localhost",
+                        database:"prueba",
+                        user:"admin",
+                        password:"admin2Pass=",
+                    
+                    });
+                    /*
+                    var conexion = mysql.createConnection({
+                        host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
+                        database:"b8gyoaad4emvcrwuwtra",
+                        user:"uoxipcxsxq7neldz",
+                        password:"emZVDmwZxUMHrha8bhAL",
+                    
+                    });*/
+
+                    conexion.connect(function(error){
+                        if(error){
+                            throw error;
+                        }else{
+                            console.log('CONEXION EXITOSA 1');
+                        }
+                    });
+                
+                conexion.query(sql_,(error,result)=>{
+                    if (error) throw error;
+
+                    if ( result.length > 0){
+                        //console.log(result);
+                        console.log("si que existe");
+                        //conexion.end();
+                    }else{
+                        console.log("no existe");
+                        fecha = aux[0].date;
+                            
+                        console.log("fecha es ahora :");
+                            console.log(fecha);
+                        
+                        for ( let i = 0; i < Object.values(response.data).length ; i++){
+                            
+                        
+                            precio = aux[i].price;
+                            hora = aux[i].hour;
+                            unidades = aux[i].units;
+                            fecha = aux[i].date;
+                        
+                            var value_=[[precio,hora,unidades,fecha]];
+                            conexion.query(sql, [value_], function (err, result) {
+                                if (err) throw err;
+                                console.log("Number of records inserted: " + result.affectedRows);
+                            });
+                        } 
+                        //conexion.end(); 
+                    }
+                });
         
-      
-    })
-   //--------------------------------------------------------------------------------------------//
-   //--------------------------------------------------------------------------------------------//
 
-   let url2 = 'https://api.preciodelaluz.org/v1/prices/avg?zone=PCB'
-   axios.get(url2,{
+        })
+        .catch(err => {
+            console.log(err);
+        })
 
-   })
-   .then((response) => { 
+        //--------------------------PRECIOS GASOLINA-----------------------------------------//
+            app.get('/PreciosProvincia/:provincia',(req,res) => {
+                console.log(req.params)
+                console.log(req.params.provincia)
+                var provincia
+                
+                
+                for(let i = 0 ; i <= CODIGOS_PROV.length-1; i++){
+                    
+                    if(CODIGOS_PROV[i][1] == req.params.provincia){
+                        provincia = CODIGOS_PROV[i][0]
+                    }
 
-       var respuesta = response.data;
-       console.log(respuesta);
-       var fecha2 = respuesta.date;
-       var Precio2 = respuesta.price;
-       var unidades2= respuesta.units;
-       console.log(fecha2);
-       var Media_dia=[[fecha2,Precio2,unidades2]];
+                }
+                
+               
+                console.log(provincia)
 
-       //------------------------------------------------------------------------------------------------//
+                let url_GASOLINA = `https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/FiltroProvincia/${provincia}`
+                let url_test = "https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/FiltroMunicipio/140" 
+                axios.get(url_GASOLINA,{
+
+                })
+                .then((response) => {
+                    //console.log(response.data)
+                    console.log(response.data.ListaEESSPrecio[2])
+                    var tamaño = response.data.ListaEESSPrecio.length
+                    console.log("el tamamño es : ", tamaño)
+                    res.json(response.data.ListaEESSPrecio)
+                })
+                
+            
+            })
+
+                            //--------------------------------------------------------------------------------------------//
+                //--------------------------------------------------------------------------------------------//
+
+                let url2 = 'https://api.preciodelaluz.org/v1/prices/avg?zone=PCB'
+                axios.get(url2,{
+
+                })
+                .then((response) => { 
+
+                    var respuesta = response.data;
+                    console.log(respuesta);
+                    var fecha2 = respuesta.date;
+                    var Precio2 = respuesta.price;
+                    var unidades2= respuesta.units;
+                    console.log(fecha2);
+                    var Media_dia=[[fecha2,Precio2,unidades2]];
+
+                    //------------------------------------------------------------------------------------------------//
+                
+                    var sql2 = `INSERT INTO Precios_media (fecha,precio,unidades) VALUES ?`;
+                    var sql3 = `SELECT * FROM Precios_media WHERE fecha = "${fecha2}"`;
+
+                    
+                        var conexion = mysql.createConnection({
+                            host:"localhost",
+                            database:"prueba",
+                            user:"admin",
+                            password:"admin2Pass=",
+                        
+                        });
+                            /*
+                        var conexion = mysql.createConnection({
+                            host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
+                            database:"b8gyoaad4emvcrwuwtra",
+                            user:"uoxipcxsxq7neldz",
+                            password:"emZVDmwZxUMHrha8bhAL",
+                        
+                        });*/
+
+                        conexion.connect(function(error){
+                            if(error){
+                                    throw error;
+                            }else{
+                                    console.log('CONEXION EXITOSA 2');
+                            }
+                        });
+
+                        conexion.query(sql3,(error,result)=>{
+                            if (error) throw error;
+
+                            if ( result.length > 0){
+                                    //console.log(result);
+                                    console.log("si que existe para esta fecha media ");
+                                    //conexion.end();
+                            }else{
+                                    console.log("nuevo dia");
+                                    console.log(Media_dia)
+                                    conexion.query(sql2,[Media_dia],  function (err, result) {
+                                        if (err) throw err;
+                                        console.log("Number of records inserted: " + result.affectedRows);
+                                    });
+                                
+                                }
+
+                            });
+                            // conexion.end();
+
+                    })
+                .catch(err => {
+                    console.log(err);
+                })
+   //});
+
    
-       var sql2 = `INSERT INTO Precios_media (fecha,precio,unidades) VALUES ?`;
-       var sql3 = `SELECT * FROM Precios_media WHERE fecha = "${fecha2}"`;
+   
 
-       
-           var conexion = mysql.createConnection({
-               host:"localhost",
-               database:"prueba",
-               user:"admin",
-               password:"admin2Pass=",
-           
-           });
-               /*
-           var conexion = mysql.createConnection({
-               host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
-               database:"b8gyoaad4emvcrwuwtra",
-               user:"uoxipcxsxq7neldz",
-               password:"emZVDmwZxUMHrha8bhAL",
-           
-           });*/
-
-           conexion.connect(function(error){
-               if(error){
-                       throw error;
-               }else{
-                       console.log('CONEXION EXITOSA 2');
-               }
-           });
-
-           conexion.query(sql3,(error,result)=>{
-               if (error) throw error;
-
-               if ( result.length > 0){
-                       //console.log(result);
-                       console.log("si que existe para esta fecha media ");
-                       //conexion.end();
-               }else{
-                       console.log("nuevo dia");
-                       console.log(Media_dia)
-                       conexion.query(sql2,[Media_dia],  function (err, result) {
-                           if (err) throw err;
-                           console.log("Number of records inserted: " + result.affectedRows);
-                       });
-                   
-                   }
-
-               });
-              // conexion.end();
-
-       })
-   .catch(err => {
-       console.log(err);
-   })
-//});
 
 
 
@@ -758,6 +774,298 @@ app.get('/',(req,res) => {
             console.log("datos error");
         }
     });
+
+
+    /*-----------------------------------------*/
+
+    app.post('/GastoConjunto', (req, res) => {
+        // Obtener el último ID_group insertado
+        const query = "SELECT MAX(ID_group) as max_id FROM Gasto_Conjunto"
+        conexion.query(query, (error, results) => {
+          if (error) throw error;
+          const maxId = results[0].max_id;
+          const newId = maxId + 1;
+      
+          // Asignar el nuevo ID_group y otras variables
+          var ID_group = newId;
+          var Name = req.body.Name;
+          var ID_user = req.body.ID_user;
+          var Fecha_creacion = req.body.Fecha_creacion;
+          var Description = req.body.Description;
+          var Gasto_total = req.body.Gasto_total;
+          var Moneda = req.body.Moneda;
+          var Estado = req.body.Estado;
+          var Fecha_cierre = req.body.Fecha_cierre;
+          var Fecha_eliminacion = req.body.Fecha_eliminacion;
+      
+          console.log("valor json")
+          console.log(req.body)
+          var sql_aux = `INSERT INTO Gasto_Conjunto(ID_group, Name, ID_user, Fecha_creacion, Description, Gasto_total, Moneda, Estado, Fecha_cierre, Fecha_eliminacion) 
+            VALUES ("${ID_group}", "${Name}", "${ID_user}", "${Fecha_creacion}", "${Description}", "${Gasto_total}", "${Moneda}", "${Estado}", "${Fecha_cierre}", "${Fecha_eliminacion}")`;
+      
+          conexion.query(sql_aux, (error, result) => {
+            if (error) throw error;
+            console.log("el resultado es : " + result);
+            
+            
+            // Insertar usuarios en la tabla Gasto_Conjunto_Master
+            const Users = req.body.Users;
+            if (Users && Users.length) {
+                for (let i = 0; i < Users.length; i++) {
+                    const ID_user = Users[i];
+                    const Contribucion = Gasto_total / Users.length ;
+                    const Email = "test@gmail.com";
+                    const Fecha_Union = Fecha_creacion;
+                    const sql_query = `INSERT INTO Gasto_Conjunto_Master(ID_user, ID_group, User, Email, Fecha_Union, Contribucion) 
+                                    VALUES ('${ID_user}', '${newId}', '${ID_user}', '${Email}', '${Fecha_Union}', '${Contribucion}')`;
+                    conexion.query(sql_query, (error, result) => {
+                        if (error) throw error;
+                        console.log("el resultado es : " + result);
+                    });
+                }
+            }
+          });
+          
+
+        });
+
+
+      });
+
+
+    app.get('/GastoConjunto/:ID_group', (req, res) => {
+        const ID_group = req.params.ID_group;
+        const sql_query = `SELECT * FROM Gasto_Conjunto WHERE ID_group = '${ID_group}'`;
+        conexion.query(sql_query, (error, result) => {
+          if (error) throw error;
+          console.log("el resultado es : " + result);
+          res.json(result);
+        });
+      });
+
+
+     
+     
+     
+     
+      app.post('/GastoConjuntoMaster', (req, res) => {
+        const { ID_user, ID_group, User, Email, Fecha_Union, Contribucion } = req.body;
+        
+        // Consulta para obtener el Gasto_total para el ID_group dado
+        const gastoTotalQuery = `SELECT Gasto_total FROM Gasto_Conjunto WHERE ID_group = '${ID_group}'`;
+        conexion.query(gastoTotalQuery, (error, result) => {
+          if (error) throw error;
+          const gastoTotal = result[0].Gasto_total;
+          console.log("Gasto total es: "+gastoTotal)
+          // Consulta para obtener todos los ID_user para el ID_group dado
+          const idUserQuery = `SELECT ID_user FROM Gasto_Conjunto_Master WHERE ID_group = '${ID_group}'`;
+          conexion.query(idUserQuery, (error, result) => {
+            if (error) throw error;
+            const usuarios = result;
+            const numeroUsuarios = usuarios.length + 1;
+            const nuevaContribucion = gastoTotal / numeroUsuarios;
+            console.log("usarios es :"+usuarios)
+            console.log("Nueva contribucion es : "+nuevaContribucion)
+            // Actualizar la columna Contribucion en Gasto_Conjunto_Master para los usuarios con ID_user obtenidos anteriormente
+            const idUsuarios = usuarios.map(u => u.ID_user);
+            console.log("idUsuarios : "+idUsuarios)
+            const placeholders = idUsuarios.map(() => '?,').join('').slice(0, -1);
+console.log("placeholders: " + placeholders);
+const updateQuery = `UPDATE Gasto_Conjunto_Master SET Contribucion = ${nuevaContribucion} WHERE ID_user IN (${placeholders})`;
+
+const params = idUsuarios;
+
+            conexion.query(updateQuery,params,(error, result) => {
+              if (error) throw error;
+              
+              // Insertar los datos actuales en Gasto_Conjunto_Master con el valor de Contribucion igual a nuevaContribucion
+              const insertQuery = `INSERT INTO Gasto_Conjunto_Master(ID_user, ID_group, User, Email, Fecha_Union, Contribucion) 
+                                   VALUES ('${ID_user}', '${ID_group}', '${User}', '${Email}', '${Fecha_Union}', '${nuevaContribucion}')`;
+              conexion.query(insertQuery, (error, result) => {
+                if (error) throw error;
+                console.log("el resultado es : " + result);
+                let json = {
+                  "respuesta": "correcto"
+                };
+                res.json(json);
+              });
+            });
+          });
+        });
+      });
+      
+
+      app.delete('/DeleteGastoConjuntoMaster', (req, res) => {
+        const { ID_user, ID_group, Contribucion } = req.body;
+      
+        const sql = `DELETE FROM Gasto_Conjunto_Master WHERE ID_user = ${ID_user} AND ID_group = '${ID_group}' AND Contribucion = ${Contribucion}`;
+      
+        conexion.query(sql, (error, result) => {
+          if (error) throw error;
+          console.log("el resultado es: " + result);
+          let json = {
+            "respuesta": "correcto"
+          }
+          res.json(json);
+        });
+      });
+
+      app.get('/gastosInfo/:id_user', (req, res) => {
+        const id_user = req.params.id_user;
+      
+        // Consulta para obtener los registros correspondientes al ID de usuario especificado
+        const sql = `SELECT * FROM Gasto_Conjunto_Master WHERE ID_user = ?`;
+      
+        conexion.query(sql, [id_user], (err, result) => {
+          if (err) throw err;
+          console.log(`Se encontraron ${result.length} registros para el usuario ${id_user}`);
+      
+          // Devolver los registros en la respuesta HTTP como un objeto JSON
+          res.json(result);
+        });
+      });
+
+      app.get('/gastosInfoUsers/:id_group', (req, res) => {
+        const id_group = req.params.id_group;
+    
+        // Consulta para obtener los registros correspondientes al ID de grupo especificado
+        const sql = `SELECT * FROM Gasto_Conjunto_Master WHERE ID_group = ?`;
+    
+        conexion.query(sql, [id_group], (err, result) => {
+            if (err) throw err;
+            console.log(`Se encontraron ${result.length} registros para el grupo ${id_group}`);
+    
+            // Devolver los registros en la respuesta HTTP como un objeto JSON
+            res.json(result);
+        });
+    });
+
+
+      
+
+      app.get('/gastos/:id_user', (req, res) => {
+        const id_user = req.params.id_user;
+      
+        // Consulta para obtener los ID_group correspondientes al ID de usuario especificado
+        const sql = `SELECT ID_group FROM Gasto_Conjunto_Master WHERE ID_user = ?`;
+      
+        conexion.query(sql, [id_user], (err, result) => {
+          if (err) throw err;
+      
+          const id_groups = result.map(row => row.ID_group);
+            const resultados = [];
+
+            let totalGroups = id_groups.length;
+            console.log("tamaño de totalGropus es: "+totalGroups)
+
+                id_groups.forEach((ID_group) => {
+                const sql_query = `SELECT * FROM Gasto_Conjunto WHERE ID_group = '${ID_group}' AND (Estado = 'ACTIVO' OR Estado = 'PAGADO')`;
+                conexion.query(sql_query, (err, result) => {
+                    if (err) throw err;
+                    console.log(`Se encontraron ${result.length} registros para el grupo ${ID_group}`);
+                    if (result.length > 0) {
+                        console.log("resultado no vacio ")
+                    resultados.push(result);
+                    } else {
+                    totalGroups--; // Restar 1 al tamaño inicial si result es vacío
+                    console.log("resultado vacio ")
+                    }
+                    if (resultados.length === totalGroups) {
+                    // Cuando se hayan obtenido todos los resultados, devolverlos en la respuesta HTTP como un objeto JSON
+                    res.json(resultados);
+                    return; // Salir del bucle
+                    }
+                });
+                });
+              
+
+         
+        });
+      });
+
+
+      app.get('/gastosUser/:id_user', (req, res) => {
+        const id_user = req.params.id_user;
+      
+        // Consulta para obtener los ID_group correspondientes al ID de usuario especificado
+        const sql = `SELECT ID_group FROM Gasto_Conjunto_Master WHERE ID_user = ?`;
+      
+        conexion.query(sql, [id_user], (err, result) => {
+          if (err) throw err;
+      
+          const id_groups = result.map(row => row.ID_group);
+            const resultados = [];
+
+            id_groups.forEach((ID_group) => {
+            const sql_query = `SELECT * FROM Gasto_Conjunto_Master WHERE ID_group = '${ID_group}'`;
+            conexion.query(sql_query, (err, result) => {
+                if (err) throw err;
+                console.log(`Se encontraron ${result.length} registros para el grupo ${ID_group}`);
+                resultados.push(result);
+                if (resultados.length === id_groups.length) {
+                // Cuando se hayan obtenido todos los resultados, devolverlos en la respuesta HTTP como un objeto JSON
+                res.json(resultados);
+                }
+            });
+            });
+
+         
+        });
+      });
+
+      app.put('/actualizarEstado/:ID_group', (req, res) => {
+        const ID_group = req.params.ID_group;
+        const sql_query = `UPDATE Gasto_Conjunto SET Estado = 'ELIMINADO' WHERE ID_group = '${ID_group}'`;
+        conexion.query(sql_query, (err, result) => {
+          if (err) throw err;
+          console.log(`Se actualizó el estado a 'ELIMINADO' para el grupo ${ID_group}`);
+          res.sendStatus(200);
+        });
+      });
+
+
+      app.put('/actualizarPagado', (req, res) => {
+        const { nombres, ID_group } = req.body;
+      
+        // Consulta para actualizar la columna "PAGADO" para los nombres y el ID_group especificados
+        const sql = `UPDATE Gasto_Conjunto_Master SET PAGADO = 'SI' WHERE ID_user IN (?) AND ID_group = ?`;
+      
+        const values = [nombres, ID_group];
+      
+        conexion.query(sql, values, (err, result) => {
+          if (err) throw err;
+          console.log(`Se actualizaron ${result.affectedRows} registros`);
+      
+          // Devolver una respuesta indicando el número de registros actualizados
+          res.send(`Se actualizaron ${result.affectedRows} registros`);
+        });
+      });
+      
+      
+
+      app.post('/verificarPago', (req, res) => {
+        const { id_user, ID_group } = req.body;
+      
+        // Consulta para verificar el estado de pago para el ID de usuario y el ID de grupo especificados
+        const sql = `SELECT PAGADO FROM Gasto_Conjunto_Master WHERE ID_user = ? AND ID_group = ?`;
+      
+        conexion.query(sql, [id_user, ID_group], (err, result) => {
+          if (err) throw err;
+      
+          if (result.length > 0) {
+            // Se encontraron registros para el usuario y el grupo especificados
+            const pagado = result[0].PAGADO === 'SI';
+            res.send(pagado ? 'SI' : 'NO');
+          } else {
+            // No se encontraron registros para el usuario y el grupo especificados
+            res.send('NO');
+          }
+        });
+      });
+      
+      
+      
+      
 
 
 
