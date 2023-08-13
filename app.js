@@ -8,9 +8,16 @@ var cors = require('cors');
 const bcrypt = require('bcryptjs');
 const cron = require('node-cron')
 
+const pdfkit = require('pdfkit');
+const nodemailer = require('nodemailer');
+const fs = require('fs');
+
 var jwt = require("jwt-simple");
 var moment = require("moment");
 var config = require("./config");
+
+const path = require('path');
+const { Console } = require('console');
 
 
 
@@ -471,6 +478,30 @@ app.get('/',(req,res) => {
        
     });
 
+    app.post('/verificarNombres', (req, res) => {
+        const nombres = req.body.nombres;
+      
+        const sql = `SELECT Usuario FROM Inicio_sesion WHERE Usuario IN (?)`;
+      
+        conexion.query(sql, [nombres], (error, result) => {
+          if (error) {
+            console.error(error);
+            res.status(500).json('Error en la consulta');
+            return;
+          }
+      
+          const nombresRegistrados = result.map(row => row.Usuario);
+          const nombresNoRegistrados = nombres.filter(nombre => !nombresRegistrados.includes(nombre));
+      
+          if (nombresNoRegistrados.length === 0) {
+            res.json({ registrado: true });
+          } else {
+            res.json({ registrado: false, nombresNoRegistrados });
+          }
+        });
+      });
+      
+
 
 
 
@@ -821,8 +852,27 @@ app.get('/',(req,res) => {
                     conexion.query(sql_query, (error, result) => {
                         if (error) throw error;
                         console.log("el resultado es : " + result);
+
+                                 // Suponiendo que tienes una conexión llamada "conexion" ya establecida con la base de datos.
+
+                        // Datos de ejemplo para el nuevo registro de notificación
+    
+                        const Tipo = 'GASTO_COMPARTIDO'; // Tipo de notificación (puedes cambiar 'tipo_notificacion' por el valor real que corresponda)
+                        const Info = `test contribucion : ${Contribucion}`; // Contenido o información de la notificación
+                        const Fecha_Union = new Date().toISOString(); // Fecha de unión o creación de la notificación (puedes ajustar la fecha según tus necesidades)
+                        const Estado = 'activo'; // Estado de la notificación (puedes cambiar 'activo' por el valor real que corresponda)
+                        const ID_noti = 01
+                        // Query para realizar el INSERT
+                        const insertQuery = `INSERT INTO Notificaciones( ID_user, Tipo, Info, Fecha_Union, Estado) 
+                                            VALUES ('${ID_user}', '${Tipo}', '${Info}', '${Fecha_Union}', '${Estado}')`;
+
+                        conexion.query(insertQuery, (error, result) => {
+                        if (error) throw error;
+                        console.log("El resultado es: ", result); 
+                        });
                     });
                 }
+                res.send("añadido con exito")
             }
           });
           
@@ -884,6 +934,10 @@ const params = idUsuarios;
               conexion.query(insertQuery, (error, result) => {
                 if (error) throw error;
                 console.log("el resultado es : " + result);
+
+               
+
+
                 let json = {
                   "respuesta": "correcto"
                 };
@@ -1040,6 +1094,61 @@ const params = idUsuarios;
           res.send(`Se actualizaron ${result.affectedRows} registros`);
         });
       });
+
+      app.put('/actualizarPagadoNO', (req, res) => {
+        const { nombres, ID_group } = req.body;
+      
+        // Consulta para actualizar la columna "PAGADO" a 'NO' para los nombres y el ID_group especificados
+        const sql = `UPDATE Gasto_Conjunto_Master SET PAGADO = 'NO' WHERE ID_user IN (?) AND ID_group = ?`;
+      
+        const values = [nombres, ID_group];
+      
+        conexion.query(sql, values, (err, result) => {
+          if (err) throw err;
+          console.log(`Se actualizaron ${result.affectedRows} registros a NO`);
+      
+          // Devolver una respuesta indicando el número de registros actualizados
+          res.send(`Se actualizaron ${result.affectedRows} registros a NO`);
+        });
+      });
+      
+    //   app.get('/Notificaciones', (req, res) => {
+    //     const { ID_user } = req.body;
+    //     const selectQuery = `SELECT * FROM Notificaciones WHERE ID_user = '${ID_user}'`;
+    //     console.log("notificaciones : ")
+    //     console.log(ID_user)
+    //     console.log(req.body)
+    // conexion.query(selectQuery, (error, results) => {
+    //     if (error) {
+    //         res.send(error);
+    //     } else {
+    //         // Convierte el resultado en un JSON
+    //         console.log(results)
+    //         const jsonResult = JSON.stringify(results);
+    //         res.send(jsonResult);
+    //     }
+    //   });
+      
+    // }) 
+
+    app.get('/Notificaciones/:ID_user', (req, res) => {
+        const ID_user = req.params.ID_user;
+        const selectQuery = `SELECT * FROM Notificaciones WHERE ID_user = '${ID_user}'`;
+        console.log("notificaciones : ")
+        console.log(ID_user)
+        console.log(req.body)
+    conexion.query(selectQuery, (error, results) => {
+        if (error) {
+            res.send(error);
+        } else {
+            // Convierte el resultado en un JSON
+            console.log(results)
+            const jsonResult = JSON.stringify(results);
+            res.send(jsonResult);
+        }
+      });
+      
+    }) 
       
       
 
@@ -1057,14 +1166,162 @@ const params = idUsuarios;
             const pagado = result[0].PAGADO === 'SI';
             res.send(pagado ? 'SI' : 'NO');
           } else {
-            // No se encontraron registros para el usuario y el grupo especificados
+            // No se encontraron r10egistros para el usuario y el grupo especificados
             res.send('NO');
           }
         });
       });
+
+
+      app.get('/obtenerUsuariosPagados', (req, res) => {
+        const { ID_group } = req.query;
       
+        // Consulta para obtener las columnas "ID_user", "PAGADO" y "Contribucion" de las filas con el ID_group especificado
+        const sql = `SELECT ID_user, PAGADO, Contribucion FROM Gasto_Conjunto_Master WHERE ID_group = ?`;
       
+        const values = [ID_group];
       
+        conexion.query(sql, values, (err, result) => {
+          if (err) throw err;
+      
+          const usuariosPagados = result.map(row => {
+            return {
+              ID_group: ID_group,  
+              ID_user: row.ID_user,
+              PAGADO: row.PAGADO,
+              Contribucion: row.Contribucion || "" // Añadir la columna "Contribucion" al retorno con su valor devuelto
+            };
+          });
+      
+          // Devolver una respuesta con las columnas "ID_user", "PAGADO" y "Contribucion"
+          res.json(usuariosPagados);
+        });
+      });
+
+
+      app.post('/insertarLimite', (req, res) => {
+        const { id_user, limite, tipo } = req.body;
+      
+        const insertQuery = 'INSERT INTO Limite_gasto (id_user, limite, tipo) VALUES (?,  ?, ?)';
+        const values = [id_user, limite, tipo];
+      
+        conexion.query(insertQuery, values, (error, results) => {
+          if (error) {
+            console.error('Error al insertar en la base de datos:', error);
+            res.status(500).json({ error: 'Error al insertar en la base de datos' });
+          } else {
+            console.log('Inserción exitosa en la base de datos');
+            res.status(200).json({ message: 'Inserción exitosa en la base de datos' });
+          }
+        });
+      });
+
+
+      app.get('/obtenerLimite', (req, res) => {
+        const { nombre_usuario } = req.query;
+        
+        const selectQueryLuz = `
+            SELECT limite
+            FROM Limite_gasto
+            WHERE ID_user = ?
+              AND tipo = 'LUZ'
+            ORDER BY fecha DESC
+            LIMIT 1;
+        `;
+    
+        const selectQueryGasolina = `
+            SELECT limite
+            FROM Limite_gasto
+            WHERE ID_user = ?
+              AND tipo = 'GASOLINA'
+            ORDER BY fecha DESC
+            LIMIT 1;
+        `;
+    
+        const response = {};
+    
+        conexion.query(selectQueryLuz, [nombre_usuario], (errorLuz, resultsLuz) => {
+            if (errorLuz) {
+                console.error('Error al obtener el límite de LUZ:', errorLuz);
+                res.status(500).json({ error: 'Error al obtener el límite de LUZ' });
+            } else {
+                if (resultsLuz.length > 0) {
+                    response.luz = resultsLuz[0].limite;
+                }
+    
+                conexion.query(selectQueryGasolina, [nombre_usuario], (errorGasolina, resultsGasolina) => {
+                    if (errorGasolina) {
+                        console.error('Error al obtener el límite de GASOLINA:', errorGasolina);
+                        res.status(500).json({ error: 'Error al obtener el límite de GASOLINA' });
+                    } else {
+                        if (resultsGasolina.length > 0) {
+                            response.gasolina = resultsGasolina[0].limite;
+                        }
+    
+                        if (Object.keys(response).length > 0) {
+                            res.status(200).json(response);
+                        } else {
+                            res.status(404).json({ message: 'Límites no encontrados para el usuario especificado' });
+                        }
+                    }
+                });
+            }
+        });
+    });
+    
+    
+
+
+
+
+      var userTest = "pepito"
+      const sql = `SELECT * FROM Gastos_Usuario WHERE Usuario = "${userTest}"`;
+    //const sql = `SELECT * FROM Gastos_Usuario WHERE Usuario = pepito`;
+        conexion.query(sql,(error,result)=>{
+            if (error) throw error;
+ 
+            if ( result.length > 0){
+                generarPDF("pepito",result)
+                    .then((fileName) => {
+                        console.log(`PDF generado: ${fileName}`);
+                        // Aquí puedes realizar otras acciones con el archivo generado, como enviarlo al cliente o almacenarlo en alguna ubicación específica.
+                    })
+                    .catch((error) => {
+                        console.error('Error al generar el PDF:', error);
+                    });
+            }else{
+                Console.log('no result');
+            }
+        });
+
+
+      
+
+   function generarPDF(user, gastos) {
+        const doc = new pdfkit();
+        const fileName = path.join('/home/diego/', 'pdf', `gastos_${user}_${new Date().toISOString()}.pdf`);
+        const stream = fs.createWriteStream(fileName);
+      
+        doc.pipe(stream);
+        doc.fontSize(18).text(`Reporte de Gastos para el Usuario ${user}`, { align: 'center' });
+        doc.fontSize(14).text('Detalles de gastos:', { underline: true });
+      
+        gastos.forEach((gasto) => {
+          doc.text(`ID: ${gasto.Usuario}, Nombre: ${gasto.Nombre}, Cantidad: $${gasto.Gasto}`);
+        });
+        //doc.text(`ID: ${gastos}, Descripción: ${gastos}, Cantidad: $${user}`);
+      
+        doc.end();
+      
+        return new Promise((resolve, reject) => {
+          stream.on('finish', () => resolve(fileName));
+          stream.on('error', reject);
+        });
+      }
+
+
+     
+
       
 
 
