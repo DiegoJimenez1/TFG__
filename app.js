@@ -126,65 +126,65 @@ app.use(cors())
             //--------------------------------------------------------------------------------------//
             //--------------------------------------------------------------------------------------//
 
-            var sql = "INSERT INTO precios (precio, hora, unidades, Fecha_string) VALUES ?";
-            var sql_ = `SELECT * FROM precios WHERE Fecha_string = "${fecha1}"`;
+            // var sql = "INSERT INTO precios (precio, hora, unidades, Fecha_string) VALUES ?";
+            // var sql_ = `SELECT * FROM precios WHERE Fecha_string = "${fecha1}"`;
 
-                    //CONEXION LOCAL    
-                    var conexion = mysql.createConnection({
-                        host:"localhost",
-                        database:"prueba",
-                        user:"admin",
-                        password:"admin2Pass=",
+            //         //CONEXION LOCAL    
+            //         var conexion = mysql.createConnection({
+            //             host:"localhost",
+            //             database:"prueba",
+            //             user:"admin",
+            //             password:"admin2Pass=",
                     
-                    });
-                    /*
-                    var conexion = mysql.createConnection({
-                        host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
-                        database:"b8gyoaad4emvcrwuwtra",
-                        user:"uoxipcxsxq7neldz",
-                        password:"emZVDmwZxUMHrha8bhAL",
+            //         });
+            //         /*
+            //         var conexion = mysql.createConnection({
+            //             host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
+            //             database:"b8gyoaad4emvcrwuwtra",
+            //             user:"uoxipcxsxq7neldz",
+            //             password:"emZVDmwZxUMHrha8bhAL",
                     
-                    });*/
+            //         });*/
 
-                    conexion.connect(function(error){
-                        if(error){
-                            throw error;
-                        }else{
-                            console.log('CONEXION EXITOSA 1');
-                        }
-                    });
+            //         conexion.connect(function(error){
+            //             if(error){
+            //                 throw error;
+            //             }else{
+            //                 console.log('CONEXION EXITOSA 1');
+            //             }
+            //         });
                 
-                conexion.query(sql_,(error,result)=>{
-                    if (error) throw error;
+            //     conexion.query(sql_,(error,result)=>{
+            //         if (error) throw error;
 
-                    if ( result.length > 0){
-                        //console.log(result);
-                        console.log("si que existe");
-                        //conexion.end();
-                    }else{
-                        console.log("no existe");
-                        fecha = aux[0].date;
+            //         if ( result.length > 0){
+            //             //console.log(result);
+            //             console.log("si que existe");
+            //             //conexion.end();
+            //         }else{
+            //             console.log("no existe");
+            //             fecha = aux[0].date;
                             
-                        console.log("fecha es ahora :");
-                            console.log(fecha);
+            //             console.log("fecha es ahora :");
+            //                 console.log(fecha);
                         
-                        for ( let i = 0; i < Object.values(response.data).length ; i++){
+            //             for ( let i = 0; i < Object.values(response.data).length ; i++){
                             
                         
-                            precio = aux[i].price;
-                            hora = aux[i].hour;
-                            unidades = aux[i].units;
-                            fecha = aux[i].date;
+            //                 precio = aux[i].price;
+            //                 hora = aux[i].hour;
+            //                 unidades = aux[i].units;
+            //                 fecha = aux[i].date;
                         
-                            var value_=[[precio,hora,unidades,fecha]];
-                            conexion.query(sql, [value_], function (err, result) {
-                                if (err) throw err;
-                                console.log("Number of records inserted: " + result.affectedRows);
-                            });
-                        } 
-                        //conexion.end(); 
-                    }
-                });
+            //                 var value_=[[precio,hora,unidades,fecha]];
+            //                 conexion.query(sql, [value_], function (err, result) {
+            //                     if (err) throw err;
+            //                     console.log("Number of records inserted: " + result.affectedRows);
+            //                 });
+            //             } 
+            //             //conexion.end(); 
+            //         }
+            //     });
         
 
         })
@@ -1274,25 +1274,25 @@ const params = idUsuarios;
 
 
 
-      var userTest = "pepito"
-      const sql = `SELECT * FROM Gastos_Usuario WHERE Usuario = "${userTest}"`;
-    //const sql = `SELECT * FROM Gastos_Usuario WHERE Usuario = pepito`;
-        conexion.query(sql,(error,result)=>{
-            if (error) throw error;
+    //   var userTest = "pepito"
+    //   const sql = `SELECT * FROM Gastos_Usuario WHERE Usuario = "${userTest}"`;
+    // //const sql = `SELECT * FROM Gastos_Usuario WHERE Usuario = pepito`;
+    //     conexion.query(sql,(error,result)=>{
+    //         if (error) throw error;
  
-            if ( result.length > 0){
-                generarPDF("pepito",result)
-                    .then((fileName) => {
-                        console.log(`PDF generado: ${fileName}`);
-                        // Aquí puedes realizar otras acciones con el archivo generado, como enviarlo al cliente o almacenarlo en alguna ubicación específica.
-                    })
-                    .catch((error) => {
-                        console.error('Error al generar el PDF:', error);
-                    });
-            }else{
-                Console.log('no result');
-            }
-        });
+    //         if ( result.length > 0){
+    //             generarPDF("pepito",result)
+    //                 .then((fileName) => {
+    //                     console.log(`PDF generado: ${fileName}`);
+    //                     // Aquí puedes realizar otras acciones con el archivo generado, como enviarlo al cliente o almacenarlo en alguna ubicación específica.
+    //                 })
+    //                 .catch((error) => {
+    //                     console.error('Error al generar el PDF:', error);
+    //                 });
+    //         }else{
+    //             Console.log('no result');
+    //         }
+    //     });
 
 
       
