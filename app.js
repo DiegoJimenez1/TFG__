@@ -121,6 +121,7 @@ app.use(cors())
             var date1 = (new Date()).toISOString().split('T')[0];
             console.log("la fecha de hoy es :");
             console.log(aux[0].date);
+            console.log(aux);
             var fecha1 = aux[0].date;
 
             //--------------------------------------------------------------------------------------//
