@@ -88,7 +88,7 @@ app.use(cors())
 //   });
 
 
-//cron.schedule(' 0 21 * * *', () =>{
+cron.schedule('0 */6 * * *', () => {
    //----------------------------------leer datos api -------------------------------------------//
 
     console.log("******************************************* la hora actual es *******************************************************")
@@ -192,7 +192,7 @@ app.use(cors())
         .catch(err => {
             console.log(err);
         })
-
+})
 //         //--------------------------PRECIOS GASOLINA-----------------------------------------//
 //             app.get('/PreciosProvincia/:provincia',(req,res) => {
 //                 console.log(req.params)
