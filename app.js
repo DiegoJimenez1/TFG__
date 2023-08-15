@@ -131,10 +131,10 @@ app.use(cors())
 
                     //CONEXION LOCAL    
                     var conexion = mysql.createConnection({
-                        host:"localhost",
-                        database:"prueba",
-                        user:"admin",
-                        password:"admin2Pass=",
+                        host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
+                        database:"b8gyoaad4emvcrwuwtra",
+                        user:"uoxipcxsxq7neldz",
+                        password:"emZVDmwZxUMHrha8bhAL",
                     
                     });
                     /*
