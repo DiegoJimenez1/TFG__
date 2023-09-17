@@ -400,26 +400,25 @@ app.use(cors())
 
 // });
 
-// /*
-// var conexion = mysql.createConnection({
-//     host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
-//     database:"b8gyoaad4emvcrwuwtra",
-//     user:"uoxipcxsxq7neldz",
-//     password:"emZVDmwZxUMHrha8bhAL",
+ 
+ var conexion = mysql.createConnection({
+     host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
+     database:"b8gyoaad4emvcrwuwtra",
+     user:"uoxipcxsxq7neldz",
+     password:"emZVDmwZxUMHrha8bhAL",
 
-// });
-// */
-// /*
-// var conectar = function conectarBBDD(){
-// conexion.connect(function(error){
-//     if(error){
-//         throw error;
-//     }else{
-//         console.log('CONEXION EXITOSA 3');
-//     }
-// });
+ });
 
-// }*/
+// /*
+ var conectar = function conectarBBDD(){
+ conexion.connect(function(error){
+     if(error){
+         throw error;
+     }else{
+         console.log('CONEXION EXITOSA 3');
+    }
+ });
+}
 
 // //---------------------- End points ------------------------------------//
 
