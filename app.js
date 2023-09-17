@@ -423,11 +423,12 @@ app.use(cors())
 
 // //---------------------- End points ------------------------------------//
 
-// app.listen(PORT, () => console.log(`run on port ${PORT}`));
+app.listen(PORT, () => console.log(`run on port ${PORT}`));
 
-// app.get('/',(req,res) => {
-//     res.send('TFG 2022 DIEGO JIMENEZ PRIETO');
-// });
+app.get('/',(req,res) => {
+    res.send('TFG 2022 DIEGO JIMENEZ PRIETO');
+    console.log("envio datos")
+});
 
 //     //----------- manejo usuarios---------//
 
