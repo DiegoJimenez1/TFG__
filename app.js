@@ -669,7 +669,7 @@ app.get('/',(req,res) => {
     
       
 
-//     });
+     });
 
 //     app.get('/preciosLuzMadiaMes',(req,res) => {
 
