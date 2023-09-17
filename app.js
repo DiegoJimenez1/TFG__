@@ -643,29 +643,29 @@ app.get('/',(req,res) => {
 
 //     //----------------- precios ----------------------------//
 
-//     app.get('/preciosLuzHoras/:fecha',(req,res) => {
+     app.get('/preciosLuzHoras/:fecha',(req,res) => {
 
         
 
-//         const {fecha}=req.params;
-//         console.log("la fecha es :"+fecha);
-//         /*
-//         var proposedDate = fecha + "T22:00:00.000Z";
-//         console.log(proposedDate);
-//         var aux = new Date(proposedDate);
-//         console.log(aux);
-//         */
-//         const sql = `SELECT * FROM precios WHERE Fecha_string = "${fecha}"`;
+         const {fecha}=req.params;
+        console.log("la fecha es :"+fecha);
+        /*
+         var proposedDate = fecha + "T22:00:00.000Z";
+         console.log(proposedDate);
+         var aux = new Date(proposedDate);
+         console.log(aux);
+        */
+         const sql = `SELECT * FROM precios WHERE Fecha_string = "${fecha}"`;
 
-//        conexion.query(sql,(error,result)=>{
-//            if (error) throw error;
+        conexion.query(sql,(error,result)=>{
+           if (error) throw error;
 
-//            if ( result.length > 0){
-//                res.json(result);
-//            }else{
-//                res.send('no result');
-//            }
-//        });
+           if ( result.length > 0){
+                res.json(result);
+            }else{
+                res.send('no result');
+            }
+        });
     
       
 
