@@ -88,10 +88,11 @@ app.use(cors())
 //   });
 
 
-//cron.schedule(' 0 21 * * *', () =>{
+//cron.schedule('0 */6 * * *', () => {
    //----------------------------------leer datos api -------------------------------------------//
 
     console.log("******************************************* la hora actual es *******************************************************")
+   console.log("estoy rama nube");
     // crea un nuevo objeto `Date`
     var today = new Date();
  
@@ -101,6 +102,8 @@ app.use(cors())
 
    let url = 'https://api.preciodelaluz.org/v1/prices/all?zone=PCB'
 
+ 
+
     //cron.schedule('0 */12 * * *', () => {
 
         console.log('Esta tarea se ejecuta cada 12 horas');
@@ -108,6 +111,7 @@ app.use(cors())
         console.log(now)
   
         // Lectura precios dia las 24 horas
+
 
         axios.get(url,{
 
@@ -121,71 +125,76 @@ app.use(cors())
             var date1 = (new Date()).toISOString().split('T')[0];
             console.log("la fecha de hoy es :");
             console.log(aux[0].date);
-            console.log(aux);
             var fecha1 = aux[0].date;
 
             //--------------------------------------------------------------------------------------//
             //--------------------------------------------------------------------------------------//
 
-            // var sql = "INSERT INTO precios (precio, hora, unidades, Fecha_string) VALUES ?";
-            // var sql_ = `SELECT * FROM precios WHERE Fecha_string = "${fecha1}"`;
+            var sql = "INSERT INTO precios (precio, hora, unidades, Fecha_string) VALUES ?";
+            var sql_ = `SELECT * FROM precios WHERE Fecha_string = "${fecha1}"`;
 
-            //         //CONEXION LOCAL    
-            //         var conexion = mysql.createConnection({
-            //             host:"localhost",
-            //             database:"prueba",
-            //             user:"admin",
-            //             password:"admin2Pass=",
+                    //CONEXION LOCAL    
+                   
+                    /*
+                    var conexion = mysql.createConnection({
+                        host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
+                        database:"b8gyoaad4emvcrwuwtra",
+                        user:"uoxipcxsxq7neldz",
+                        password:"emZVDmwZxUMHrha8bhAL",
                     
-            //         });
-            //         /*
-            //         var conexion = mysql.createConnection({
-            //             host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
-            //             database:"b8gyoaad4emvcrwuwtra",
-            //             user:"uoxipcxsxq7neldz",
-            //             password:"emZVDmwZxUMHrha8bhAL",
-                    
-            //         });*/
+                    });*/
 
-            //         conexion.connect(function(error){
-            //             if(error){
-            //                 throw error;
-            //             }else{
-            //                 console.log('CONEXION EXITOSA 1');
-            //             }
-            //         });
+                    var conexion = mysql.createConnection({
+                        host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
+                        database:"b8gyoaad4emvcrwuwtra",
+                        user:"uoxipcxsxq7neldz",
+                        password:"emZVDmwZxUMHrha8bhAL",
+                    
+                    });
+
+                    conexion.connect(function(error){
+                        if(error){
+                            throw error;
+                        }else{
+                            console.log('CONEXION EXITOSA 1');
+                        }
+                    });
                 
-            //     conexion.query(sql_,(error,result)=>{
-            //         if (error) throw error;
+                conexion.query(sql_,(error,result)=>{
+                    if (error) throw error;
 
-            //         if ( result.length > 0){
-            //             //console.log(result);
-            //             console.log("si que existe");
-            //             //conexion.end();
-            //         }else{
-            //             console.log("no existe");
-            //             fecha = aux[0].date;
+                    if ( result.length > 0){
+                        //console.log(result);
+                        console.log(`fecha : '${fecha1}'`)
+                        //console.log("result :")
+                        //console.log(result)
+                        console.log("si que existe");
+                        //conexion.end();
+                    }else{
+                        console.log("no existe");
+                        fecha = aux[0].date;
                             
-            //             console.log("fecha es ahora :");
-            //                 console.log(fecha);
+                        console.log("fecha es ahora :");
+                            console.log(fecha);
                         
-            //             for ( let i = 0; i < Object.values(response.data).length ; i++){
+                        for ( let i = 0; i < Object.values(response.data).length ; i++){
                             
                         
-            //                 precio = aux[i].price;
-            //                 hora = aux[i].hour;
-            //                 unidades = aux[i].units;
-            //                 fecha = aux[i].date;
+                            precio = aux[i].price;
+                            hora = aux[i].hour;
+                            unidades = aux[i].units;
+                            fecha = aux[i].date;
                         
-            //                 var value_=[[precio,hora,unidades,fecha]];
-            //                 conexion.query(sql, [value_], function (err, result) {
-            //                     if (err) throw err;
-            //                     console.log("Number of records inserted: " + result.affectedRows);
-            //                 });
-            //             } 
-            //             //conexion.end(); 
-            //         }
-            //     });
+                            var value_=[[precio,hora,unidades,fecha]];
+                            conexion.query(sql, [value_], function (err, result) {
+                                if (err) throw err;
+                                console.log(result)
+                                console.log("Number of records inserted: " + result.affectedRows);
+                            });
+                        } 
+                        //conexion.end(); 
+                    }
+                });
         
 
         })
@@ -193,6 +202,80 @@ app.use(cors())
             console.log(err);
         })
 
+        console.log("inicio peticion precios media")
+
+        let url2 = 'https://api.preciodelaluz.org/v1/prices/avg?zone=PCB'
+                axios.get(url2,{
+
+                })
+                .then((response) => { 
+
+                    var respuesta = response.data;
+                    console.log(respuesta);
+                    var fecha2 = respuesta.date;
+                    var Precio2 = respuesta.price;
+                    var unidades2= respuesta.units;
+                    console.log(fecha2);
+                    var Media_dia=[[fecha2,Precio2,unidades2]];
+
+                    //------------------------------------------------------------------------------------------------//
+                
+                    var sql2 = `INSERT INTO Precios_media (fecha,precio,unidades) VALUES ?`;
+                    var sql3 = `SELECT * FROM Precios_media WHERE fecha = "${fecha2}"`;
+
+                    
+                        // var conexion = mysql.createConnection({
+                        //     host:"localhost",
+                        //     database:"prueba",
+                        //     user:"admin",
+                        //     password:"admin2Pass=",
+                        
+                        // });
+                            
+                        var conexion = mysql.createConnection({
+                            host:"b8gyoaad4emvcrwuwtra-mysql.services.clever-cloud.com",
+                            database:"b8gyoaad4emvcrwuwtra",
+                            user:"uoxipcxsxq7neldz",
+                            password:"emZVDmwZxUMHrha8bhAL",
+                        
+                        });
+
+                        conexion.connect(function(error){
+                            if(error){
+                                    throw error;
+                            }else{
+                                    console.log('CONEXION EXITOSA 2');
+                            }
+                        });
+
+                        conexion.query(sql3,(error,result)=>{
+                            if (error) throw error;
+
+                            if ( result.length > 0){
+                                    //console.log(result);
+                                    console.log("si que existe para esta fecha media ");
+                                    //conexion.end();
+                            }else{
+                                    console.log("nuevo dia");
+                                    console.log(Media_dia)
+                                    conexion.query(sql2,[Media_dia],  function (err, result) {
+                                        if (err) throw err;
+                                        console.log("Number of records inserted: " + result.affectedRows);
+                                    });
+                                
+                                }
+
+                            });
+                            // conexion.end();
+
+                    })
+                .catch(err => {
+                    console.log(err);
+                })
+
+
+                
+//})
 //         //--------------------------PRECIOS GASOLINA-----------------------------------------//
 //             app.get('/PreciosProvincia/:provincia',(req,res) => {
 //                 console.log(req.params)
@@ -1275,25 +1358,25 @@ app.use(cors())
 
 
 
-//     //   var userTest = "pepito"
-//     //   const sql = `SELECT * FROM Gastos_Usuario WHERE Usuario = "${userTest}"`;
-//     // //const sql = `SELECT * FROM Gastos_Usuario WHERE Usuario = pepito`;
-//     //     conexion.query(sql,(error,result)=>{
-//     //         if (error) throw error;
+//       var userTest = "pepito"
+//       const sql = `SELECT * FROM Gastos_Usuario WHERE Usuario = "${userTest}"`;
+//     //const sql = `SELECT * FROM Gastos_Usuario WHERE Usuario = pepito`;
+//         conexion.query(sql,(error,result)=>{
+//             if (error) throw error;
  
-//     //         if ( result.length > 0){
-//     //             generarPDF("pepito",result)
-//     //                 .then((fileName) => {
-//     //                     console.log(`PDF generado: ${fileName}`);
-//     //                     // Aquí puedes realizar otras acciones con el archivo generado, como enviarlo al cliente o almacenarlo en alguna ubicación específica.
-//     //                 })
-//     //                 .catch((error) => {
-//     //                     console.error('Error al generar el PDF:', error);
-//     //                 });
-//     //         }else{
-//     //             Console.log('no result');
-//     //         }
-//     //     });
+//             if ( result.length > 0){
+//                 generarPDF("pepito",result)
+//                     .then((fileName) => {
+//                         console.log(`PDF generado: ${fileName}`);
+//                         // Aquí puedes realizar otras acciones con el archivo generado, como enviarlo al cliente o almacenarlo en alguna ubicación específica.
+//                     })
+//                     .catch((error) => {
+//                         console.error('Error al generar el PDF:', error);
+//                     });
+//             }else{
+//                 Console.log('no result');
+//             }
+//         });
 
 
       
@@ -1324,7 +1407,6 @@ app.use(cors())
      
 
       
-
 
 
 
