@@ -92,7 +92,7 @@ app.use(cors())
    //----------------------------------leer datos api -------------------------------------------//
 
     console.log("******************************************* la hora actual es *******************************************************")
-   console.log("estoy rama nube");
+   console.log("estoy rama nube_V2");
     // crea un nuevo objeto `Date`
     var today = new Date();
  
