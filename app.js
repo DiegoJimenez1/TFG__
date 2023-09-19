@@ -1374,7 +1374,7 @@ app.get('/',(req,res) => {
                         console.error('Error al generar el PDF:', error);
                     });
             }else{
-                Console.log('no result');
+                console.log('no result');
             }
         });
 
